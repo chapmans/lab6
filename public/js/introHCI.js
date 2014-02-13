@@ -12,6 +12,7 @@ function initializePage() {
 	$('.project a').click(addProjectDetails);
 
 	$('#colorBtn').click(randomizeColors);
+	$('#musicBtn').click(randomSongName);
 }
 
 /*
@@ -27,6 +28,14 @@ function addProjectDetails(e) {
 	var idNumber = projectID.substr('project'.length);
 
 	console.log("User clicked on project " + idNumber);
+
+	var url = "/project/" + idNumber;
+	console.log(url);
+	$.get(url, function(result) {
+		var insertText = '<img class="displayImage" src="' + result.image + '"><h4 class="date">' + result.date + '</h4><div class="summary">' + result.summary + '</div>'
+		$('#' + projectID).find('.details').html(insertText);
+		console.log(result);
+	});
 }
 
 /*
@@ -35,4 +44,37 @@ function addProjectDetails(e) {
  */
 function randomizeColors(e) {
 	console.log("User clicked on color button");
+
+	$.get('/palette', function(result) {
+		var colors = result.colors.hex;
+		console.log(colors);
+		$('body').css('background-color', colors[0]);
+		$('.thumbnail').css('background-color', colors[1]);
+		$('h1, h2, h3, h4, h5, h5').css('color', colors[2]);
+		$('p').css('color', colors[3]);
+		$('.project img').css('opacity', .75);
+	});
+}
+
+function randomSongName(e) {
+	console.log("Clicked on music button.");
+
+	var randProjectNum = Math.floor(Math.random()*$('.project').length) + 1;
+	var randProject = $('#project' + randProjectNum);
+	var randWord = randProject.find('p').html().split(' ');
+
+	var randPage = Math.floor(Math.random()*5) + 1;
+	var url = 'http://ws.spotify.com/search/1/track.json?q=' + randWord[Math.floor(Math.random()*randWord.length)];
+	$.get(url, function(result) {
+		var tracks = result.tracks;
+		var randTrack = tracks[Math.floor(Math.random()*tracks.length)];
+		console.log(randTrack);
+
+		if (randTrack) {
+			var htmlString = '<a href="' + randTrack.href + '">' + randTrack.name + ' by ' + randTrack.artists[0].name + '</a>';
+			$('#song').html(htmlString);
+		} else {
+			$('#song').html("try again?");
+		}
+	});
 }
